@@ -1,8 +1,5 @@
 package id.putraprima.retrofit.ui;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,10 +9,12 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import id.putraprima.retrofit.R;
 import id.putraprima.retrofit.api.helper.ServiceGenerator;
 import id.putraprima.retrofit.api.models.Envelope;
-import id.putraprima.retrofit.api.models.LoginResponse;
 import id.putraprima.retrofit.api.models.UserInfo;
 import id.putraprima.retrofit.api.services.ApiInterface;
 import retrofit2.Call;
@@ -24,18 +23,20 @@ import retrofit2.Response;
 
 public class ProfileActivity extends AppCompatActivity {
     public Context context;
-    private TextView Name , Email , Id;
+    private TextView mIdText;
+    private TextView mNameText;
+    private TextView mEmailText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
         context = getApplicationContext();
-
         getMe();
-        Id = findViewById(R.id.iptId);
-        Name = findViewById(R.id.iptName);
-        Email = findViewById(R.id.iptEmail);
+
+        mIdText = findViewById(R.id.idText);
+        mNameText = findViewById(R.id.nameText);
+        mEmailText = findViewById(R.id.emailText);
     }
 
     @Override
@@ -52,16 +53,15 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void getMe() {
         SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(context);
-        Toast.makeText(context, preference.getString("token",null), Toast.LENGTH_SHORT).show();
-        ApiInterface service = ServiceGenerator.createService(ApiInterface.class, "Bearer "+preference.getString("token",null));
+        Toast.makeText(context, preference.getString("token", null), Toast.LENGTH_SHORT).show();
+        ApiInterface service = ServiceGenerator.createService(ApiInterface.class, "Bearer " + preference.getString("token", null));
         Call<Envelope<UserInfo>> call = service.me();
         call.enqueue(new Callback<Envelope<UserInfo>>() {
             @Override
             public void onResponse(Call<Envelope<UserInfo>> call, Response<Envelope<UserInfo>> response) {
-
-                Id.setText(Integer.toString(response.body().getData().getId()));
-                Name.setText(response.body().getData().getName());
-                Email.setText(response.body().getData().getEmail());
+                mIdText.setText(Integer.toString(response.body().getData().getId()));
+                mNameText.setText(response.body().getData().getName());
+                mEmailText.setText(response.body().getData().getEmail());
             }
 
             @Override
