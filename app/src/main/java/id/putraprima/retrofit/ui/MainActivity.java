@@ -63,4 +63,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void handleRegister(View view) {
+        Intent itn = new Intent(MainActivity.this , registerActivity.class);
+        startActivity(itn);
+    }
 }
