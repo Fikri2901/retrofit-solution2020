@@ -90,8 +90,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void handleRegisterClick(View view) {
+    public void handleRegister(View view) {
         Intent intent = new Intent(this, registerActivity.class);
         startActivity(intent);
+    }
+
+    public void tombolRecipe(View view) {
+        Intent itn = new Intent(MainActivity.this , RecipeActivity.class);
+        startActivity(itn);
     }
 }
