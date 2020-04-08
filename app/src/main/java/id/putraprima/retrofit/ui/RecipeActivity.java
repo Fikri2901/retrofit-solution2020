@@ -1,8 +1,11 @@
 package id.putraprima.retrofit.ui;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -29,6 +32,10 @@ public class RecipeActivity extends AppCompatActivity {
     ArrayList<Recipe> recipe;
     RecipeAdapter adapter;
     private ConstraintLayout mRecipeLayout;
+    int page = 2;
+    Button btnLoadMore;
+    ProgressDialog progressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +51,9 @@ public class RecipeActivity extends AppCompatActivity {
         adapter = new RecipeAdapter(recipe);
         recipeView.setAdapter(adapter);
         mRecipeLayout = findViewById(R.id.recipeLayout);
+        doLoad();
+
+        btnLoadMore = findViewById(R.id.buttonLoad);
     }
 
     public void doRecipe() {
@@ -62,17 +72,17 @@ public class RecipeActivity extends AppCompatActivity {
                         String foto = response.body().getData().get(i).getFoto();
                         recipe.add(new Recipe(id, namaResep, deskripsi, bahan, langkahPembuatan, foto));
                     }
-                    Snackbar snackbar = Snackbar.make(mRecipeLayout, "Load data sukses, harap tunggu", Snackbar.LENGTH_SHORT);
+                    Snackbar snackbar = Snackbar.make(mRecipeLayout, "Memuat data, Mohon ditunggu", Snackbar.LENGTH_SHORT);
                     snackbar.show();
                 }else {
-                    Snackbar snackbar = Snackbar.make(mRecipeLayout, "Load data gagal", Snackbar.LENGTH_SHORT);
+                    Snackbar snackbar = Snackbar.make(mRecipeLayout, "Gagal mengambil data", Snackbar.LENGTH_SHORT);
                     snackbar.show();
                 }
             }
 
             @Override
             public void onFailure(Call<Envelope<List<Recipe>>> call, Throwable t) {
-                Snackbar snackbar = Snackbar.make(mRecipeLayout, "gagal koneksi", Snackbar.LENGTH_SHORT);
+                Snackbar snackbar = Snackbar.make(mRecipeLayout, "Gagal koneksi", Snackbar.LENGTH_SHORT);
                 snackbar.show();
             }
         });
@@ -80,7 +90,6 @@ public class RecipeActivity extends AppCompatActivity {
     }
 
     public void doLoad() {
-
         recipe.clear();
         adapter.notifyDataSetChanged();
 
@@ -96,6 +105,47 @@ public class RecipeActivity extends AppCompatActivity {
     }
 
     public void tombolLoad(View view) {
-        doLoad();
+        progressDialog = new ProgressDialog(RecipeActivity.this);
+        progressDialog.setMessage("Mohon ditunggu");
+        progressDialog.show();
+        NextLoad();
+    }
+
+    public void NextLoad(){
+        ApiInterface service = ServiceGenerator.createService(ApiInterface.class);
+        Call<Envelope<List<Recipe>>> call = service.doLoadMore(page++);
+        call.enqueue(new Callback<Envelope<List<Recipe>>>() {
+            @Override
+            public void onResponse(Call<Envelope<List<Recipe>>> call, Response<Envelope<List<Recipe>>> response) {
+                if(response.isSuccessful()){
+                    progressDialog.dismiss();
+                    for(int i=0; i<response.body().getData().size(); i++){
+                        int id = response.body().getData().get(i).getId();
+                        String namaResep = response.body().getData().get(i).getNama_resep();
+                        String deskripsi = response.body().getData().get(i).getDeskripsi();
+                        String bahan = response.body().getData().get(i).getBahan();
+                        String langkahPembuatan = response.body().getData().get(i).getLangkah_pembuatan();
+                        String foto = response.body().getData().get(i).getFoto();
+                        recipe.add(new Recipe(id, namaResep, deskripsi, bahan, langkahPembuatan, foto));
+                        adapter.notifyDataSetChanged();
+                    }
+                    Snackbar snackbar = Snackbar.make(mRecipeLayout, "Data ditambah", Snackbar.LENGTH_SHORT);
+                    snackbar.show();
+                    btnLoadMore.setActivated(true);
+                }
+                else if(response.errorBody()!=null){
+                    progressDialog.dismiss();
+                    Snackbar snackbar = Snackbar.make(mRecipeLayout, "load data gagal pada page " +page, Snackbar.LENGTH_SHORT);
+                    snackbar.show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Envelope<List<Recipe>>> call, Throwable t) {
+                progressDialog.dismiss();
+                Snackbar snackbar = Snackbar.make(mRecipeLayout, "Gagal koneksi", Snackbar.LENGTH_SHORT);
+                snackbar.show();
+            }
+        });
     }
 }
