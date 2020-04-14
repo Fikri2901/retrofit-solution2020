@@ -95,8 +95,5 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void tombolRecipe(View view) {
-        Intent itn = new Intent(MainActivity.this , RecipeActivity.class);
-        startActivity(itn);
-    }
+
 }
